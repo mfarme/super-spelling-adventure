@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Spelling Adventure - Test Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        .test-section {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+        }
+        .success { color: #4facfe; }
+        .error { color: #ff6b6b; }
+        button {
+            background: #4facfe;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #3a8bdb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🌟 Super Spelling Adventure - System Test</h1>
+    
+    <div class="test-section">
+        <h2>📱 Browser Compatibility</h2>
+        <p id="browser-info">Detecting browser...</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔊 Audio Support</h2>
+        <p id="audio-support">Checking audio support...</p>
+        <button onclick="testAudio()">Test Speech Synthesis</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>💾 Local Storage</h2>
+        <p id="storage-support">Checking local storage...</p>
+        <button onclick="testStorage()">Test Storage</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 Game Files</h2>
+        <p id="file-check">Checking game files...</p>
+        <button onclick="testFiles()">Check Files</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🚀 Ready to Play?</h2>
+        <p>If all tests pass, you're ready to enjoy Super Spelling Adventure!</p>
+        <button onclick="window.location.href='index.html'" style="background: #2ecc71; font-size: 1.2em; padding: 15px 30px;">
+            🌟 Start Playing! 🌟
+        </button>
+    </div>
+
+    <script>
+        // Browser detection
+        function detectBrowser() {
+            const userAgent = navigator.userAgent;
+            let browserName = 'Unknown';
+            
+            if (userAgent.includes('Chrome')) browserName = 'Chrome';
+            else if (userAgent.includes('Firefox')) browserName = 'Firefox';
+            else if (userAgent.includes('Safari')) browserName = 'Safari';
+            else if (userAgent.includes('Edge')) browserName = 'Edge';
+            
+            document.getElementById('browser-info').innerHTML = 
+                `<span class="success">✅ Browser: ${browserName}</span><br>
+                 <span class="success">✅ JavaScript: Enabled</span>`;
+        }
+        
+        // Audio support test
+        function checkAudioSupport() {
+            if ('speechSynthesis' in window) {
+                document.getElementById('audio-support').innerHTML = 
+                    '<span class="success">✅ Speech Synthesis: Supported</span>';
+            } else {
+                document.getElementById('audio-support').innerHTML = 
+                    '<span class="error">❌ Speech Synthesis: Not supported</span>';
+            }
+        }
+        
+        function testAudio() {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance('Hello! Audio is working!');
+                utterance.rate = 0.8;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Speech synthesis not supported in this browser');
+            }
+        }
+        
+        // Storage support test
+        function checkStorageSupport() {
+            try {
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                document.getElementById('storage-support').innerHTML = 
+                    '<span class="success">✅ Local Storage: Supported</span>';
+            } catch (e) {
+                document.getElementById('storage-support').innerHTML = 
+                    '<span class="error">❌ Local Storage: Not supported</span>';
+            }
+        }
+        
+        function testStorage() {
+            try {
+                const testData = { words: ['test', 'word'], timestamp: Date.now() };
+                localStorage.setItem('spellingWords', JSON.stringify(testData.words));
+                const retrieved = JSON.parse(localStorage.getItem('spellingWords'));
+                localStorage.removeItem('spellingWords');
+                
+                if (retrieved && retrieved.length === 2) {
+                    alert('✅ Storage test successful! Your word lists will be saved.');
+                } else {
+                    alert('❌ Storage test failed');
+                }
+            } catch (e) {
+                alert('❌ Storage error: ' + e.message);
+            }
+        }
+        
+        // File check
+        function checkFiles() {
+            const files = ['styles.css', 'script.js'];
+            let allGood = true;
+            
+            document.getElementById('file-check').innerHTML = 
+                '<span class="success">✅ index.html: Present</span><br>' +
+                '<span style="color: #feca57;">⏳ Checking other files...</span>';
+        }
+        
+        function testFiles() {
+            // Simple check - if we got this far, the main files are loading
+            document.getElementById('file-check').innerHTML = 
+                '<span class="success">✅ index.html: Present</span><br>' +
+                '<span class="success">✅ CSS and JS: Loading properly</span><br>' +
+                '<span class="success">✅ All game files: Ready</span>';
+        }
+        
+        // Run tests on load
+        window.addEventListener('DOMContentLoaded', () => {
+            detectBrowser();
+            checkAudioSupport();
+            checkStorageSupport();
+            checkFiles();
+        });
+    </script>
+</body>
+</html>

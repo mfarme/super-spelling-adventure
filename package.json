@@ -1,0 +1,32 @@
+{
+  "name": "super-spelling-adventure",
+  "version": "1.0.0",
+  "description": "A magical, interactive spelling game designed to make learning fun for kids!",
+  "main": "index.html",
+  "scripts": {
+    "start": "open index.html",
+    "serve": "python3 -m http.server 8000",
+    "serve-alt": "python -m SimpleHTTPServer 8000"
+  },
+  "keywords": [
+    "spelling",
+    "education",
+    "kids",
+    "learning",
+    "game",
+    "interactive",
+    "html5",
+    "javascript",
+    "css3"
+  ],
+  "author": "Super Spelling Adventure Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/super-spelling-adventure.git"
+  },
+  "bugs": {
+    "url": "https://github.com/yourusername/super-spelling-adventure/issues"
+  },
+  "homepage": "https://yourusername.github.io/super-spelling-adventure"
+}

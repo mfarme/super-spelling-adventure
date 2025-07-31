@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 Super Spelling Adventure! 🌟</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One:wght@400&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Floating particles for fun background -->
+    <div class="particles"></div>
+    
+    <div class="container">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen active">
+            <div class="welcome-content">
+                <h1 class="rainbow-text">🌟 Super Spelling Adventure! 🌟</h1>
+                <div class="character">🧙‍♀️</div>
+                <p class="welcome-message">Ready to become a spelling wizard? Let's make learning magical!</p>
+                
+                <div class="word-input-section">
+                    <h3>✨ Add Your Spelling Words ✨</h3>
+                    <div class="input-group">
+                        <input type="text" id="new-word-input" placeholder="Type a word or comma-separated list: cat, dog, sun...">
+                        <button id="add-word-btn">Add Words! 🎯</button>
+                    </div>
+                    <p class="input-help">💡 Tip: Add multiple words at once by separating them with commas!</p>
+                    <div class="word-list-container">
+                        <div id="word-list"></div>
+                        <button id="clear-words-btn" class="clear-btn">Clear All 🗑️</button>
+                    </div>
+                </div>
+                
+                <div class="game-mode-selection">
+                    <h3>🎮 Choose Your Adventure!</h3>
+                    <div class="mode-buttons">
+                        <button class="mode-btn" data-mode="typing">
+                            <div class="mode-icon">⌨️</div>
+                            <div class="mode-title">Typing Challenge</div>
+                            <div class="mode-desc">Type the whole word!</div>
+                        </button>
+                        <button class="mode-btn" data-mode="letters">
+                            <div class="mode-icon">🔤</div>
+                            <div class="mode-title">Letter Hunt</div>
+                            <div class="mode-desc">Guess letter by letter!</div>
+                        </button>
+                        <button class="mode-btn" data-mode="scramble">
+                            <div class="mode-icon">🔀</div>
+                            <div class="mode-title">Word Scramble</div>
+                            <div class="mode-desc">Unscramble the letters!</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen">
+            <div class="game-header">
+                <div class="score-info">
+                    <div class="score-item">
+                        <span class="label">Score:</span>
+                        <span id="score" class="value">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="label">Streak:</span>
+                        <span id="streak" class="value">0</span>
+                    </div>
+                    <div class="score-item">
+                        <span class="label">Word:</span>
+                        <span id="word-counter" class="value">1/10</span>
+                    </div>
+                </div>
+                <button id="back-to-menu" class="back-btn">🏠 Menu</button>
+            </div>
+
+            <div class="game-content">
+                <div class="character-container">
+                    <div id="game-character" class="character">🧙‍♀️</div>
+                    <div id="character-speech" class="speech-bubble"></div>
+                </div>
+
+                <div class="word-section">
+                    <div id="word-display" class="word-display"></div>
+                    
+                    <div class="audio-controls">
+                        <button id="hear-word" class="audio-btn">
+                            <span class="btn-icon">🔊</span>
+                            <span class="btn-text">Hear Word</span>
+                        </button>
+                        <button id="hear-spelled" class="audio-btn">
+                            <span class="btn-icon">🔤</span>
+                            <span class="btn-text">Spell It Out</span>
+                        </button>
+                        <button id="hint-btn" class="audio-btn">
+                            <span class="btn-icon">💡</span>
+                            <span class="btn-text">Hint</span>
+                        </button>
+                    </div>
+
+                    <div class="input-section">
+                        <div class="input-container">
+                            <input type="text" id="game-input" placeholder="Your answer...">
+                            <button id="submit-btn" class="submit-btn">
+                                <span class="btn-text">Submit!</span>
+                                <span class="btn-icon">🚀</span>
+                            </button>
+                        </div>
+                        <div id="feedback" class="feedback"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+                <button id="next-word" class="next-btn">Next Word! ➡️</button>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" class="screen">
+            <div class="results-content">
+                <div id="results-character" class="character">🎉</div>
+                <h2 id="results-title">Amazing Work!</h2>
+                <div class="results-stats">
+                    <div class="stat-item">
+                        <div class="stat-number" id="final-score">0</div>
+                        <div class="stat-label">Final Score</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="words-correct">0</div>
+                        <div class="stat-label">Words Correct</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="best-streak">0</div>
+                        <div class="stat-label">Best Streak</div>
+                    </div>
+                </div>
+                <div class="results-actions">
+                    <button id="play-again" class="action-btn primary">Play Again! 🎮</button>
+                    <button id="new-words" class="action-btn secondary">New Words 📝</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Effects -->
+    <div id="celebration" class="celebration"></div>
+    
+    <script src="script.js"></script>
+</body>
+</html> 
