@@ -1,5 +1,7 @@
 # Super Spelling Adventure!
 
+[![Deploy to GitHub Pages](https://github.com/mfarme/super-spelling-adventure/actions/workflows/deploy.yml/badge.svg)](https://github.com/mfarme/super-spelling-adventure/actions/workflows/deploy.yml)
+
 A spelling game designed to make my daughter's spelling homework more fun. We coded it together. Features multiple game modes, colorful animations, encouraging characters, and audio support to help children master their spelling words.
 
 ![Spelling Adventure Screenshot](https://github.com/mfarme/super-spelling-adventure/blob/main/public/screenshot.png)
