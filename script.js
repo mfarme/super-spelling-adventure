@@ -14,6 +14,7 @@ class SpellingGame {
         this.isGameActive = false;
         this.guessedLetters = [];
         this.revealedLetters = [];
+        this.userAnswer = ''; // Store the user's last answer for feedback
 
         // Character expressions for different situations
         this.characters = {
@@ -316,6 +317,7 @@ class SpellingGame {
         this.currentWord = this.words[this.currentWordIndex];
         this.guessedLetters = [];
         this.revealedLetters = [];
+        this.userAnswer = ''; // Reset user answer for new word
 
         this.updateWordDisplay();
         this.updateUI();
@@ -430,6 +432,7 @@ class SpellingGame {
     }
 
     guessWord(word) {
+        this.userAnswer = word; // Store the user's answer for feedback
         if (word === this.currentWord) {
             this.handleCorrectWord();
         } else {
@@ -453,7 +456,9 @@ class SpellingGame {
         // Reveal the word with animation
         this.revealWordWithAnimation();
 
-        this.showFeedback(`🎉 Correct! "${this.currentWord.toUpperCase()}" - Amazing work!`, 'correct');
+        // Show user's answer in the feedback for confirmation
+        const userAnswerUpper = this.userAnswer ? this.userAnswer.toUpperCase() : this.currentWord.toUpperCase();
+        this.showFeedback(`🎉 Correct! You typed: "${userAnswerUpper}" - Amazing work!`, 'correct');
         this.updateCharacter('celebrating', this.getRandomEncouragement());
 
         // Create celebration effect
@@ -465,7 +470,13 @@ class SpellingGame {
 
     handleIncorrectWord() {
         this.streak = 0; // Reset streak on incorrect answer
-        this.showFeedback(`Not quite right. The word was "${this.currentWord.toUpperCase()}". Keep trying! 💪`, 'incorrect');
+        
+        // Create a more detailed feedback showing user's answer vs correct answer
+        const userAnswerUpper = this.userAnswer.toUpperCase();
+        const correctAnswerUpper = this.currentWord.toUpperCase();
+        
+        const feedbackMessage = `You typed: "${userAnswerUpper}" | Correct word: "${correctAnswerUpper}" | Keep trying! 💪`;
+        this.showFeedback(feedbackMessage, 'incorrect');
         this.updateCharacter('encouraging', "That's okay! Learning is all about trying!");
 
         this.nextWordBtn.disabled = false;
