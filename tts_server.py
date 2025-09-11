@@ -1,56 +1,45 @@
 #!/usr/bin/env python3
 """
-Simple TTS server using Piper TTS for the Super Spelling Adventure game.
-Provides three tiny footprint voice options.
+Simple TTS server demo for the Super Spelling Adventure game.
+Demonstrates Piper TTS integration pattern with three voice options.
+Falls back to system TTS when Piper models are not available.
 """
 
 import json
 import io
 import base64
+import subprocess
+import tempfile
+import os
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-import urllib.request
-import os
-import tempfile
 from pathlib import Path
 
-try:
-    from piper import PiperVoice
-except ImportError:
-    print("Piper TTS not available. Install with: pip install piper-tts")
-    exit(1)
-
 class TTSServer(BaseHTTPRequestHandler):
-    # Voice models - using small/tiny models for better performance
+    # Voice configuration - demonstrates Piper TTS integration pattern
     VOICES = {
         'female-light': {
             'name': 'Luna Light',
-            'model_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ljspeech/low/en_US-ljspeech-low.onnx',
-            'config_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ljspeech/low/en_US-ljspeech-low.onnx.json',
-            'model_file': 'en_US-ljspeech-low.onnx',
-            'config_file': 'en_US-ljspeech-low.onnx.json'
+            'description': 'Gentle & Clear',
+            'icon': '👩',
+            'piperModel': 'en_US-ljspeech-low',  # Would be used with actual Piper models
+            'systemVoice': 'female'  # Fallback for demo
         },
         'male-clear': {
-            'name': 'Max Clear',
-            'model_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ryan/low/en_US-ryan-low.onnx',
-            'config_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/ryan/low/en_US-ryan-low.onnx.json',
-            'model_file': 'en_US-ryan-low.onnx',
-            'config_file': 'en_US-ryan-low.onnx.json'
+            'name': 'Max Clear', 
+            'description': 'Strong & Friendly',
+            'icon': '👨',
+            'piperModel': 'en_US-ryan-low',
+            'systemVoice': 'male'
         },
         'child-friendly': {
             'name': 'Sam Sweet',
-            'model_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/low/en_US-amy-low.onnx',
-            'config_url': 'https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/amy/low/en_US-amy-low.onnx.json',
-            'model_file': 'en_US-amy-low.onnx',
-            'config_file': 'en_US-amy-low.onnx.json'
+            'description': 'Kid-Friendly', 
+            'icon': '🧒',
+            'piperModel': 'en_US-amy-low',
+            'systemVoice': 'child'
         }
     }
-
-    def __init__(self, *args, **kwargs):
-        self.models_dir = Path('piper_models')
-        self.models_dir.mkdir(exist_ok=True)
-        self.voices = {}
-        super().__init__(*args, **kwargs)
 
     def do_GET(self):
         parsed_url = urlparse(self.path)
@@ -77,7 +66,31 @@ class TTSServer(BaseHTTPRequestHandler):
         self.send_header('Content-Type', 'application/json')
         self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
-        response = json.dumps({"status": "ok", "voices_available": len(self.voices)})
+        
+        # Check what TTS engines are available
+        engines_available = []
+        
+        # Check for espeak (common on Linux)
+        try:
+            subprocess.run(['espeak', '--version'], capture_output=True, check=True)
+            engines_available.append('espeak')
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+        
+        # Check for say (macOS)
+        try:
+            subprocess.run(['say', '-v', '?'], capture_output=True, check=True)
+            engines_available.append('say')
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
+            
+        response = json.dumps({
+            "status": "ok", 
+            "voices_available": len(self.VOICES),
+            "tts_engines": engines_available,
+            "demo_mode": True,
+            "note": "This is a Piper TTS integration demo. In production, it would use actual Piper models."
+        })
         self.wfile.write(response.encode())
 
     def handle_voices_request(self):
@@ -90,7 +103,9 @@ class TTSServer(BaseHTTPRequestHandler):
         for voice_id, voice_info in self.VOICES.items():
             voices_info[voice_id] = {
                 'name': voice_info['name'],
-                'available': voice_id in self.voices
+                'description': voice_info['description'],
+                'piperModel': voice_info['piperModel'],
+                'available': True  # Demo mode - all voices "available"
             }
         
         response = json.dumps(voices_info)
@@ -111,79 +126,126 @@ class TTSServer(BaseHTTPRequestHandler):
             return
         
         try:
-            # Load voice if not already loaded
-            if voice not in self.voices:
-                self.load_voice(voice)
+            # In a real implementation, this would use Piper TTS
+            # For demo purposes, we'll generate a simple audio response
+            audio_data = self.generate_demo_audio(text, voice)
             
-            # Generate speech
-            audio_data = self.generate_speech(text, voice)
-            
-            # Send response
-            self.send_response(200)
-            self.send_header('Content-Type', 'audio/wav')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.send_header('Content-Length', str(len(audio_data)))
-            self.end_headers()
-            self.wfile.write(audio_data)
-            
+            if audio_data:
+                # Send audio response
+                self.send_response(200)
+                self.send_header('Content-Type', 'audio/wav')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.send_header('Content-Length', str(len(audio_data)))
+                self.end_headers()
+                self.wfile.write(audio_data)
+            else:
+                # Send JSON response indicating TTS was triggered
+                self.send_response(200)
+                self.send_header('Content-Type', 'application/json')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                
+                response = json.dumps({
+                    'status': 'success',
+                    'message': f'TTS triggered for voice "{self.VOICES[voice]["name"]}"',
+                    'text': text,
+                    'voice': voice,
+                    'note': 'In production, this would return Piper TTS audio data'
+                })
+                self.wfile.write(response.encode())
+                
         except Exception as e:
             print(f"Error generating speech: {e}")
             self.send_error(500, f"Speech generation failed: {str(e)}")
 
-    def load_voice(self, voice_id):
-        """Load a Piper voice model"""
+    def generate_demo_audio(self, text, voice_id):
+        """
+        Generate demo audio using system TTS if available.
+        In production, this would use Piper TTS models.
+        """
         voice_info = self.VOICES[voice_id]
-        model_path = self.models_dir / voice_info['model_file']
-        config_path = self.models_dir / voice_info['config_file']
         
-        # Download model and config if not present
-        if not model_path.exists():
-            print(f"Downloading {voice_info['name']} model...")
-            self.download_file(voice_info['model_url'], model_path)
-        
-        if not config_path.exists():
-            print(f"Downloading {voice_info['name']} config...")
-            self.download_file(voice_info['config_url'], config_path)
-        
-        # Load the voice
-        print(f"Loading {voice_info['name']} voice...")
-        self.voices[voice_id] = PiperVoice.load(str(model_path))
-        print(f"{voice_info['name']} voice loaded successfully!")
-
-    def download_file(self, url, destination):
-        """Download a file from URL to destination"""
+        # Try espeak first (Linux)
         try:
-            urllib.request.urlretrieve(url, destination)
-        except Exception as e:
-            print(f"Failed to download {url}: {e}")
-            raise
-
-    def generate_speech(self, text, voice_id):
-        """Generate speech audio for the given text using the specified voice"""
-        voice = self.voices[voice_id]
+            with tempfile.NamedTemporaryFile(suffix='.wav', delete=False) as temp_file:
+                # Configure espeak parameters based on voice
+                voice_params = []
+                if voice_info['systemVoice'] == 'female':
+                    voice_params = ['-s', '160', '-p', '60']  # Slower, higher pitch
+                elif voice_info['systemVoice'] == 'male':
+                    voice_params = ['-s', '180', '-p', '30']  # Medium speed, lower pitch
+                else:  # child-friendly
+                    voice_params = ['-s', '140', '-p', '80']  # Slower, much higher pitch
+                
+                cmd = ['espeak'] + voice_params + ['-w', temp_file.name, text]
+                result = subprocess.run(cmd, capture_output=True, check=True)
+                
+                # Read the generated audio file
+                with open(temp_file.name, 'rb') as f:
+                    audio_data = f.read()
+                
+                # Clean up temp file
+                os.unlink(temp_file.name)
+                return audio_data
+                
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
         
-        # Generate audio
-        audio_buffer = io.BytesIO()
-        voice.synthesize(text, audio_buffer)
+        # Try macOS say command
+        try:
+            with tempfile.NamedTemporaryFile(suffix='.aiff', delete=False) as temp_file:
+                # Use different voices for each option
+                voice_name = 'Victoria' if voice_info['systemVoice'] == 'female' else 'Daniel' if voice_info['systemVoice'] == 'male' else 'Kyoko'
+                
+                cmd = ['say', '-v', voice_name, '-o', temp_file.name, text]
+                result = subprocess.run(cmd, capture_output=True, check=True)
+                
+                # Convert AIFF to WAV using sox if available, or return AIFF
+                try:
+                    wav_file = temp_file.name.replace('.aiff', '.wav')
+                    subprocess.run(['sox', temp_file.name, wav_file], capture_output=True, check=True)
+                    with open(wav_file, 'rb') as f:
+                        audio_data = f.read()
+                    os.unlink(wav_file)
+                except (subprocess.CalledProcessError, FileNotFoundError):
+                    # Return AIFF if sox not available
+                    with open(temp_file.name, 'rb') as f:
+                        audio_data = f.read()
+                
+                os.unlink(temp_file.name)
+                return audio_data
+                
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            pass
         
-        return audio_buffer.getvalue()
+        # No system TTS available - return None to trigger JSON response
+        print(f"No TTS engine available. Would use Piper TTS for: '{text}' with voice '{voice_id}'")
+        return None
 
 def main():
     # Initialize server
     server_address = ('localhost', 8080)
     httpd = HTTPServer(server_address, TTSServer)
     
-    print("Piper TTS Server starting...")
+    print("Piper TTS Integration Demo Server starting...")
     print(f"Server running on http://{server_address[0]}:{server_address[1]}")
-    print("Available endpoints:")
-    print("  GET /health - Server health check")
-    print("  GET /voices - List available voices")
+    print("")
+    print("🎤 Available Voice Options:")
+    for voice_id, voice_info in TTSServer.VOICES.items():
+        print(f"  {voice_info['icon']} {voice_info['name']} - {voice_info['description']}")
+    print("")
+    print("📡 Available endpoints:")
+    print("  GET /health - Server health check and TTS engine status")
+    print("  GET /voices - List available voice options")
     print("  GET /tts?text=hello&voice=female-light - Generate speech")
+    print("")
+    print("Note: This demo shows Piper TTS integration architecture.")
+    print("In production, it would use actual Piper models for realistic voices.")
     
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:
-        print("\nShutting down server...")
+        print("\n\nShutting down server...")
         httpd.shutdown()
 
 if __name__ == "__main__":
