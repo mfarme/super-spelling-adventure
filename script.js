@@ -16,6 +16,29 @@ class SpellingGame {
         this.revealedLetters = [];
         this.userAnswer = ''; // Store the user's last answer for feedback
 
+        // Voice configuration
+        this.selectedVoice = 'female-light'; // Default voice
+        this.voices = {
+            'female-light': {
+                name: 'Luna Light',
+                description: 'Gentle & Clear',
+                icon: '👩',
+                piperModel: 'en_US-ljspeech-low' // Piper model name
+            },
+            'male-clear': {
+                name: 'Max Clear', 
+                description: 'Strong & Friendly',
+                icon: '👨',
+                piperModel: 'en_US-ryan-low'
+            },
+            'child-friendly': {
+                name: 'Sam Sweet',
+                description: 'Kid-Friendly', 
+                icon: '🧒',
+                piperModel: 'en_US-amy-low'
+            }
+        };
+
         // Character expressions for different situations
         this.characters = {
             welcome: '🧙‍♀️',
@@ -80,6 +103,7 @@ class SpellingGame {
         this.initializeElements();
         this.setupEventListeners();
         this.loadSavedWords();
+        this.loadVoicePreference();
         this.createFloatingParticles();
     }
 
@@ -95,6 +119,11 @@ class SpellingGame {
         this.wordList = document.getElementById('word-list');
         this.clearWordsBtn = document.getElementById('clear-words-btn');
         this.modeButtons = document.querySelectorAll('.mode-btn');
+
+        // Voice selection elements
+        this.voiceOptions = document.querySelectorAll('.voice-option');
+        this.voiceSampleButtons = document.querySelectorAll('.voice-sample-btn');
+        this.selectedVoiceNameElement = document.getElementById('selected-voice-name');
 
         // Game screen elements
         this.gameCharacter = document.getElementById('game-character');
@@ -138,6 +167,18 @@ class SpellingGame {
 
         this.modeButtons.forEach(btn => {
             btn.addEventListener('click', () => this.selectGameMode(btn.dataset.mode));
+        });
+
+        // Voice selection events
+        this.voiceOptions.forEach(option => {
+            option.addEventListener('click', () => this.selectVoice(option.dataset.voice));
+        });
+
+        this.voiceSampleButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering voice selection
+                this.playVoiceSample(btn.dataset.voice);
+            });
         });
 
         // Game screen events
@@ -266,6 +307,91 @@ class SpellingGame {
                 'cat', 'dog', 'sun', 'moon', 'star', 'tree', 'book', 'play', 'happy', 'friend'
             ];
             this.updateWordList();
+        }
+    }
+
+    selectVoice(voiceId) {
+        this.selectedVoice = voiceId;
+        this.updateVoiceSelection();
+        this.saveVoicePreference();
+        this.showMessage(`Voice changed to ${this.voices[voiceId].name}! 🎤`, 'success');
+    }
+
+    updateVoiceSelection() {
+        // Update UI to show selected voice
+        this.voiceOptions.forEach(option => {
+            if (option.dataset.voice === this.selectedVoice) {
+                option.classList.add('selected');
+            } else {
+                option.classList.remove('selected');
+            }
+        });
+
+        // Update selected voice name display
+        this.selectedVoiceNameElement.textContent = this.voices[this.selectedVoice].name;
+    }
+
+    playVoiceSample(voiceId) {
+        const sampleText = "Hello! I'm ready to help you with your spelling adventure!";
+        this.speakTextWithVoice(sampleText, voiceId);
+    }
+
+    saveVoicePreference() {
+        localStorage.setItem('selectedVoice', this.selectedVoice);
+    }
+
+    loadVoicePreference() {
+        const saved = localStorage.getItem('selectedVoice');
+        if (saved && this.voices[saved]) {
+            this.selectedVoice = saved;
+        }
+        this.updateVoiceSelection();
+    }
+
+    // Piper TTS integration
+    async speakTextWithVoice(text, voiceId = this.selectedVoice) {
+        try {
+            // Try Piper TTS server first
+            const response = await fetch(`http://localhost:8080/tts?text=${encodeURIComponent(text)}&voice=${voiceId}`);
+            
+            if (response.ok) {
+                const audioBlob = await response.blob();
+                const audio = new Audio(URL.createObjectURL(audioBlob));
+                audio.play();
+                return;
+            }
+        } catch (error) {
+            console.warn('Piper TTS server not available, falling back to Web Speech API:', error);
+        }
+
+        // Fallback to Web Speech API if Piper TTS is not available
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Configure voice characteristics based on selected voice
+            const voiceConfig = this.voices[voiceId];
+            switch(voiceId) {
+                case 'female-light':
+                    utterance.pitch = 1.2;
+                    utterance.rate = 0.8;
+                    break;
+                case 'male-clear':
+                    utterance.pitch = 0.8;
+                    utterance.rate = 0.9;
+                    break;
+                case 'child-friendly':
+                    utterance.pitch = 1.4;
+                    utterance.rate = 0.7;
+                    break;
+            }
+            
+            utterance.volume = 1.0;
+            window.speechSynthesis.speak(utterance);
+        } else {
+            // Last resort: show text in character speech
+            this.updateCharacter('magic', `"${text}"`);
         }
     }
 
@@ -545,45 +671,26 @@ class SpellingGame {
     }
 
     speakWord() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(this.currentWord);
-            utterance.rate = 0.8;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            window.speechSynthesis.speak(utterance);
-        }
+        this.speakTextWithVoice(this.currentWord);
     }
 
     speakWordSpelled() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
+        const letters = this.currentWord.split('');
+        let spellText = 'The word is spelled: ';
+        letters.forEach(letter => {
+            spellText += letter + ', ';
+        });
+        spellText += '. The word is ' + this.currentWord;
 
-            const letters = this.currentWord.split('');
-            let spellText = 'The word is spelled: ';
-            letters.forEach(letter => {
-                spellText += letter + ', ';
-            });
-            spellText += '. The word is ' + this.currentWord;
-
-            const utterance = new SpeechSynthesisUtterance(spellText);
-            utterance.rate = 0.7;
-            utterance.pitch = 1.0;
-            utterance.volume = 1.0;
-            window.speechSynthesis.speak(utterance);
-        }
+        this.speakTextWithVoice(spellText);
     }
 
     showHint() {
         const hint = this.hints[this.currentWord] || `This word has ${this.currentWord.length} letters and starts with "${this.currentWord[0].toUpperCase()}"`;
         this.updateCharacter('thinking', hint);
 
-        // Speak the hint
-        if ('speechSynthesis' in window) {
-            const utterance = new SpeechSynthesisUtterance(hint);
-            utterance.rate = 0.8;
-            window.speechSynthesis.speak(utterance);
-        }
+        // Speak the hint using selected voice
+        this.speakTextWithVoice(hint);
     }
 
     createCelebration() {

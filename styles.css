@@ -302,6 +302,139 @@ body {
     font-weight: 600;
 }
 
+/* Voice Selection */
+.voice-selection {
+    margin: 40px 0;
+    text-align: center;
+}
+
+.voice-selection h3 {
+    font-family: 'Fredoka One', 'Comic Sans MS', cursive, fantasy;
+    font-size: 1.8rem;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.voice-help {
+    color: #666;
+    margin-bottom: 25px;
+    font-size: 1rem;
+}
+
+.voice-options {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 25px;
+}
+
+.voice-option {
+    background: rgba(255, 255, 255, 0.9);
+    border: 3px solid #e0e0e0;
+    border-radius: 20px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    position: relative;
+}
+
+.voice-option:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    border-color: #4facfe;
+}
+
+.voice-option.selected {
+    border-color: #4facfe;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.voice-option.selected .voice-desc {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.voice-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.voice-icon {
+    font-size: 3rem;
+    margin-bottom: 5px;
+}
+
+.voice-info {
+    text-align: center;
+}
+
+.voice-name {
+    font-family: 'Fredoka One', 'Comic Sans MS', cursive, fantasy;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.voice-desc {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.voice-sample-btn {
+    background: linear-gradient(135deg, #96fbc4 0%, #f9f6f6 100%);
+    border: 2px solid #96fbc4;
+    border-radius: 15px;
+    padding: 8px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.voice-sample-btn:hover {
+    background: linear-gradient(135deg, #96fbc4 0%, #96fbc4 100%);
+    transform: scale(1.05);
+}
+
+.voice-option.selected .voice-sample-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.voice-option.selected .voice-sample-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.selected-voice {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 25px;
+    border-radius: 25px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.selected-voice-label {
+    opacity: 0.9;
+}
+
+#selected-voice-name {
+    font-weight: 700;
+    font-family: 'Fredoka One', 'Comic Sans MS', cursive, fantasy;
+}
+
 /* Game Screen */
 .game-header {
     display: flex;
